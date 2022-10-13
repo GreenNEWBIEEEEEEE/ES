@@ -5,14 +5,14 @@
 MODULE_DESCRIPTION("hello_world");
 MODULE_LICENSE("GPL");
 
-static int hello_init(void)
+static int __init hello_init(void)
 {
     printk(KERN_INFO "Hello world !\n");
     return 0;
 }
 
 
-static void hello_exit(void)
+static void __exit hello_exit(void)
 {
     printk(KERN_INFO "Bye !\n");
 }
@@ -21,7 +21,12 @@ static void hello_exit(void)
 void file_read()
 {
 
-    filp_open()
+    struct file* filp = filp_open("./input.txt", O_RDONLY, 0);
+    
+    vfs_read();
+
+    filp_close(filp, NULL);
+
 }
 
 module_init(hello_init);
