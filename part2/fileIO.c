@@ -1,6 +1,7 @@
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/fs.h>
+#include <linux/string.h>
 
 MODULE_DESCRIPTION("hello_world");
 MODULE_LICENSE("GPL");
@@ -18,9 +19,19 @@ struct file* file_open(const char *filename, int flags, umode_t mode)
     return filp;
 }
 
-void file_close(struct file* filp)
+void reverseString(char *s)
 {
-    filp_close(filp, NULL);
+    size_t length = strlen(s);
+    size_t i = 0;
+    char t;
+    length >>= 1;
+
+    while (i < length)
+    {
+        t = s[i];
+        s[i] = s[length - i - 1];
+        s[length - i - 1] = t;
+    }
 }
 
 static int __init hello_init(void)
@@ -29,7 +40,6 @@ static int __init hello_init(void)
     char buf[512] = "";
     loff_t pos;
 
-    printk(KERN_INFO "Hello world !\n");
     //mm_segment_t old_fs = get_fs();
     //set_fs(KERNEL_DS);
 
@@ -38,15 +48,16 @@ static int __init hello_init(void)
     pos = 0;
     kernel_read(filp, buf, sizeof(buf), &pos);
     
-    file_close(filp);
+    filp_close(filp, NULL);
     
+    reverseString(buf);
 
     filp = file_open("./output.txt", O_WRONLY | O_CREAT, 0644);
     
     pos = 0;
     kernel_write(filp, buf, sizeof(buf), &pos);
     
-    file_close(filp);
+    filp_close(filp, NULL);
     //set_fs(old_fs);
     return 0;
 }
@@ -54,7 +65,6 @@ static int __init hello_init(void)
 
 static void __exit hello_exit(void)
 {
-    printk(KERN_INFO "Bye !\n");
 }
 
 module_init(hello_init);
