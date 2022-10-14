@@ -24,13 +24,12 @@ void reverseString(char *s)
     size_t length = strlen(s);
     size_t i = 0;
     char t;
-    length >>= 1;
-
-    while (i < length)
+    while (i < (length >> 1))
     {
         t = s[i];
         s[i] = s[length - i - 1];
         s[length - i - 1] = t;
+        i++;
     }
 }
 
@@ -50,8 +49,10 @@ static int __init hello_init(void)
     
     filp_close(filp, NULL);
     
+    printk("origin: %s\n", buf);
     reverseString(buf);
-
+    printk("reversed: %s\n", buf);
+    
     filp = file_open("./output.txt", O_WRONLY | O_CREAT, 0644);
     
     pos = 0;
