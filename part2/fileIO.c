@@ -21,7 +21,7 @@ struct file* file_open(const char *filename, int flags, umode_t mode)
 
 void reverseString(char *s)
 {
-    size_t length = strlen(s) - 1;
+    size_t length = strlen(s);
     size_t i = 0;
     char t;
     while (i < (length >> 1))
