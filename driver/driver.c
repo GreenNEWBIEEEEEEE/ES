@@ -7,7 +7,7 @@
 MODULE_DESCRIPTION("hello_world");
 MODULE_LICENSE("GPL");
 
-static dev_t my_dev = MKDEV(202,128);
+static dev_t my_dev = MKDEV(203,128);
 static struct cdev my_cdev;
 static int BUF_SIZE = 1024;
 static char BUF[1024] = "";
@@ -25,8 +25,6 @@ static struct file_operations my_operations = {
     .release = my_release
 };
 
-
-
 static ssize_t my_read(struct file* , char __user* buf, size_t, loff_t*)
 {
     size_t length = strlen(BUF);
@@ -37,18 +35,22 @@ static ssize_t my_read(struct file* , char __user* buf, size_t, loff_t*)
         return -EFAULT;
     }
 
+    printk(KERN_INFO "Reading String=%s\n", BUF);
+
     return length;
 }
 
 static ssize_t my_write(struct file* filp, const char __user* buf, size_t count, loff_t* pos)
 {
-    size_t length = strnlen_user(BUF, BUF_SIZE);
-
+    size_t length = strnlen_user(buf, BUF_SIZE);
+    
     if (copy_from_user(BUF, buf, length))
     {
         printk(KERN_INFO "copy from user failed\n");
         return -EFAULT;
     }
+    
+    printk(KERN_INFO "Writing String=%s\n", BUF);
 
     return length;
 }
@@ -70,9 +72,10 @@ static int my_release(struct inode*, struct file*)
 static int __init hello_init(void)
 {
     int count = 1;
-    int ret = register_chrdev_region(my_dev, count, "HW_DRIVER"); 
+    int ret = register_chrdev_region(my_dev, count, "demo"); 
+    
     if (ret < 0)
-        printk(KERN_INFO "char device init failed\n");
+        printk(KERN_INFO "char device init failed %d\n", ret);
 
     cdev_init(&my_cdev, &my_operations);
     
@@ -80,6 +83,7 @@ static int __init hello_init(void)
     if (ret < 0)
         printk(KERN_INFO "char device add failed\n");
 
+    printk(KERN_INFO "char device loaded\n");
     return 0;
 }
 
@@ -89,6 +93,8 @@ static void __exit hello_exit(void)
     int count = 1;
     cdev_del(&my_cdev);
     unregister_chrdev_region(my_dev, count);
+    
+    printk(KERN_INFO "char device unloaded\n");
 }
 
 module_init(hello_init);
