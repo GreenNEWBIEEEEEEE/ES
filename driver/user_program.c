@@ -5,8 +5,8 @@
 int main()
 {
     int bufsize = 1024;
-    char buf[bufsize];
-    char buf2[bufsize];
+    char buf[1024] = "";
+    char buf2[1024] = "";
 
     scanf("%s", buf);
     
