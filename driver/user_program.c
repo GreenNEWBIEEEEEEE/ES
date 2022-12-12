@@ -5,19 +5,19 @@
 int main()
 {
     int bufsize = 1024;
-    char buf[1024] = "";
-    char buf2[1024] = "";
+    char buf[1024] = "";  // input
+    char buf2[1024] = ""; // output
 
-    scanf("%s", buf);
+    scanf("%s", buf);     // input string
     
-    int fd = open("/dev/demo", O_RDWR);
-    if (fd < 0)
+    int fd = open("/dev/demo", O_RDWR);  // open device
+    if (fd < 0)   // If opening successfully, it will return 0
     {
         printf("open file failed %d\n", fd);
         return -1;
     }
 
-    int ret = write(fd, buf, bufsize);
+    int ret = write(fd, buf, bufsize);    // write input buffer into device.
 
     if (ret < 0)
     {
@@ -25,7 +25,7 @@ int main()
         return -1;
     }
 
-    ret = read(fd, buf2, bufsize);
+    ret = read(fd, buf2, bufsize);    // read output buffer from device.
     
     if (ret < 0)
     {

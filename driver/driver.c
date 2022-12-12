@@ -23,6 +23,8 @@ static ssize_t my_write(struct file*, const char*, size_t, loff_t*);
 static int my_open(struct inode *, struct file *);
 static int my_release(struct inode*, struct file*);
 
+
+// Declare a file_operations, and map them with my custom fuction.
 static struct file_operations my_operations = {
     .owner = THIS_MODULE,
     .open = my_open,
@@ -35,6 +37,9 @@ static ssize_t my_read(struct file* , char __user* buf, size_t, loff_t*)
 {
     size_t length = strlen(BUF);
     
+
+    // Copy BUF string from kernel space to buf string from user space.
+    // Return 0 if success
     if (copy_to_user(buf, BUF, length))
     {
         printk(KERN_INFO "copy to user failed\n");
@@ -48,8 +53,11 @@ static ssize_t my_read(struct file* , char __user* buf, size_t, loff_t*)
 
 static ssize_t my_write(struct file* filp, const char __user* buf, size_t count, loff_t* pos)
 {
+    // Get length of string from user space.
     size_t length = strnlen_user(buf, BUF_SIZE);
     
+    // Copy buf string from user space to BUF string in kernel space.
+    // Return 0 if success
     if (copy_from_user(BUF, buf, length))
     {
         printk(KERN_INFO "copy from user failed\n");
@@ -78,6 +86,8 @@ static int my_release(struct inode*, struct file*)
 static int __init hello_init(void)
 {
     int count = 1;
+
+
     int ret = register_chrdev_region(my_dev, count, DEVICE_NAME); 
     
     if (ret < 0)
