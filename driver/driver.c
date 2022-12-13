@@ -83,26 +83,38 @@ static int my_release(struct inode*, struct file*)
     return 0;
 }
 
+
+// 1a. (when you have the major number for cdev)                 register_chrdev_region(): Register a major number into `dev_t` structure
+// 1b. (when you are asking the VFS to give a free major number) alloc_chrdev_region(): Register a major number into `dev_t` structure
+// 2. class_create: Create a `class` strcture.
+// 3. device_create() to create device file under /dev directory.
+// 
 static int __init hello_init(void)
 {
     int count = 1;
 
-
-    int ret = register_chrdev_region(my_dev, count, DEVICE_NAME); 
+    // Register a range of device numbers
+    // int ret = register_chrdev_region(my_dev, count, DEVICE_NAME); // Register a device number named `demo`.
     
-    if (ret < 0)
-        printk(KERN_INFO "char device register failed %d\n", ret);
+    // if (ret < 0)
+    //    printk(KERN_INFO "char device register failed %d\n", ret);
 
-    ret = alloc_chrdev_region(&my_dev, 0, 1, DEVICE_NAME);
+    // Register a range of char device numbers
+    int ret = alloc_chrdev_region(&my_dev, 0, 1, DEVICE_NAME);
 
     if (ret < 0)
         printk(KERN_INFO "char device alloc chrdev region failed\n");
 
+    // Create a struct class structure
     my_class = class_create(THIS_MODULE, CLASS_NAME);
+
+    // Create a device node for a character device
     device_create(my_class, NULL, my_dev, NULL, DEVICE_NAME);
     
+    // Initialize a `cdev` structure with my file operations.
     cdev_init(&my_cdev, &my_operations);
     
+    // Add char device into system to make it be accessed by user program.
     ret = cdev_add(&my_cdev, my_dev, count);
     if (ret < 0)
         printk(KERN_INFO "char device add failed\n");
@@ -116,9 +128,15 @@ static void __exit hello_exit(void)
 {
     int count = 1;
     
+    // Remove a device that was created with `device_create`
     device_destroy(my_class, my_dev);
+
+    // Destroy a `class` structure
     class_destroy(my_class);
+
+    // Remove a cdev from the system
     cdev_del(&my_cdev);
+
     unregister_chrdev_region(my_dev, count);
     
     printk(KERN_INFO "char device unloaded\n");
